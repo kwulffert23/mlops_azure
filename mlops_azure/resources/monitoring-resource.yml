@@ -19,9 +19,9 @@ common_permissions: &permissions
 resources:
   quality_monitors:
     mlops_azure_quality_monitor:
-      table_name: kw_dev.taxi_fare_model.predictions
+      table_name: ${bundle.target}.taxi_fare_model.predictions
       # TODO: Update the output schema name as per your requirements
-      output_schema_name: ${bundle.target}.mlops_azure
+      output_schema_name: ${bundle.target}.taxi_fare_model
       # TODO: Update the below parameters as per your requirements
       assets_dir: /Users/${workspace.current_user.userName}/databricks_lakehouse_monitoring
       inference_log:
@@ -44,10 +44,10 @@ resources:
             notebook_path: ../monitoring/notebooks/MonitoredMetricViolationCheck.py
             base_parameters:
               env: ${bundle.target}
-              table_name_under_monitor: kw_dev.taxi_fare_model.predictions
+              table_name_under_monitor: ${bundle.target}.taxi_fare_model.predictions
               # TODO: Update the metric to be monitored and violation threshold
-              metric_to_monitor: root_mean_squared_error
-              metric_violation_threshold: 100
+              metric_to_monitor: r2_score
+              metric_violation_threshold: 0.7
               num_evaluation_windows: 5
               num_violation_windows: 2
               # git source information of current ML resource deployment. It will be persisted as part of the workflow run
