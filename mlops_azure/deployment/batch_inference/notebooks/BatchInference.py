@@ -71,6 +71,53 @@ model_uri = f"models:/{model_name}@{alias}"
 
 # COMMAND ----------
 
+# Generating sample inference table -- your use-case may require one with a different schema etc. 
+from pyspark.sql.functions import to_timestamp, lit
+from pyspark.sql.types import IntegerType
+import math
+from datetime import timedelta, timezone
+
+def rounded_unix_timestamp(dt, num_minutes=15):
+    """
+    Ceilings datetime dt to interval num_minutes, then returns the unix timestamp.
+    """
+    nsecs = dt.minute * 60 + dt.second + dt.microsecond * 1e-6
+    delta = math.ceil(nsecs / (60 * num_minutes)) * (60 * num_minutes) - nsecs
+    return int((dt + timedelta(seconds=delta)).replace(tzinfo=timezone.utc).timestamp())
+
+rounded_unix_timestamp_udf = udf(rounded_unix_timestamp, IntegerType())
+
+## if the table doesn't exist create it
+# table_name = "{env_ws_catalog}.{project_db}.feature_store_inference_input"
+# input_table_name ##"mmt_mlops_dev.cicd_proj.feature_store_inference_input"
+
+if not spark._jsparkSession.catalog().tableExists(input_table_name):
+    df = spark.table("delta.`dbfs:/databricks-datasets/nyctaxi-with-zipcodes/subsampled`")
+    df.withColumn(
+        "rounded_pickup_datetime",
+        to_timestamp(rounded_unix_timestamp_udf(df["tpep_pickup_datetime"], lit(15))),
+    ).withColumn(
+        "rounded_dropoff_datetime",
+        to_timestamp(rounded_unix_timestamp_udf(df["tpep_dropoff_datetime"], lit(30))),
+    ).drop(
+        "tpep_pickup_datetime"
+    ).drop(
+        "tpep_dropoff_datetime"
+    # ).drop(
+    #     "fare_amount" ## (omit dropping column to pretend groundtruth exists/is available) 
+    ## here we will assume that the label IS known and already joined to the input table
+    ## in reality -- groundtruth labels are usually known later and then joined (much later) to the input table -- here we assume that they are available and joined to the input table byt timestamps + zip codes   
+    ## REF: # https://docs.databricks.com/en/lakehouse-monitoring/create-monitor-api.html#example-notebooks
+    ).write.mode(
+        "overwrite"
+    ).saveAsTable(
+        # name="hive_metastore.default.taxi_scoring_sample_feature_store_inference_input" ## original
+        # name="{env_ws_catalog}.{project_db}.feature_store_inference_input" ## requires stacks update + PR
+        name=input_table_name ## this is the dbutils input_table_name 
+    )#.display()
+
+# COMMAND ----------
+
 from mlflow import MlflowClient
 
 # Get model version from alias
@@ -85,8 +132,8 @@ from datetime import datetime
 ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # COMMAND ----------
-# DBTITLE 1,Load model and run inference
 
+# DBTITLE 1,Load model and run inference
 from predict import predict_batch
 
 predict_batch(spark, model_uri, input_table_name, output_table_name, model_version, ts)
