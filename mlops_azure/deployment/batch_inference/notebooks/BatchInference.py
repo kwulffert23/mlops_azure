@@ -71,6 +71,12 @@ model_uri = f"models:/{model_name}@{alias}"
 
 # COMMAND ----------
 
+print(f"input_table_name: {input_table_name}")
+print(f"output_table_name: {output_table_name}")
+print(f"model_name: {model_name}")
+
+# COMMAND ----------
+
 # Generating sample inference table -- your use-case may require one with a different schema etc. 
 from pyspark.sql.functions import to_timestamp, lit
 from pyspark.sql.types import IntegerType
