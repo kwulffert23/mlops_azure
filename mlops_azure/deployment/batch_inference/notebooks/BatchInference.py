@@ -80,6 +80,8 @@ print(f"model_name: {model_name}")
 # Generating sample inference table -- your use-case may require one with a different schema etc. 
 from pyspark.sql.functions import to_timestamp, lit
 from pyspark.sql.types import IntegerType
+from pyspark.sql.functions import col
+from pyspark.sql.types import DoubleType
 import math
 from datetime import timedelta, timezone
 
