@@ -47,9 +47,26 @@ notebook_path =  '/Workspace/' + os.path.dirname(dbutils.notebook.entry_point.ge
 %cd ..
 sys.path.append("../..")
 
+sys.path.append(f"notebook_path.replace('notebooks','')/metric_violation_check_query.py") 
+
 # COMMAND ----------
 
-from metric_violation_check_query import sql_query
+module_path = "./metric_violation_check_query.py"
+
+# Load the module
+import importlib
+
+spec = importlib.util.spec_from_file_location("metric_violation_check_query", module_path)
+metric_violation_check_query = importlib.util.module_from_spec(spec)
+sys.modules["metric_violation_check_query"] = metric_violation_check_query
+spec.loader.exec_module(metric_violation_check_query)
+
+# Now you can use the imported module
+sql_query = metric_violation_check_query.sql_query
+
+# COMMAND ----------
+
+# from metric_violation_check_query import sql_query
 
 table_name_under_monitor = dbutils.widgets.get("table_name_under_monitor")
 metric_to_monitor = dbutils.widgets.get("metric_to_monitor")

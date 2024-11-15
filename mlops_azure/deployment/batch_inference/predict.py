@@ -1,5 +1,6 @@
 import mlflow
-from pyspark.sql.functions import struct, lit, to_timestamp
+from pyspark.sql.functions import col, struct, lit, to_timestamp
+from pyspark.sql.types import DoubleType
 
 
 def predict_batch(
@@ -19,7 +20,7 @@ def predict_batch(
     )    
     
     output_df = (
-        table.withColumn("prediction", predict(struct(*table.columns)))
+        table.withColumn("prediction", predict(struct(*table.columns)).cast(DoubleType()))
         .withColumn("model_version", lit(model_version))
         .withColumn("inference_timestamp", to_timestamp(lit(ts)))
     )

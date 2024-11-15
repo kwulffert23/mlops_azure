@@ -54,3 +54,7 @@ jobs:
         id: training
         run: |
           databricks bundle run model_training_job -t kw_test
+      - name: Run Inference Workflow for Test Deployment Target in Staging Workspace
+        id: inference
+        run: |
+          databricks bundle run batch_inference_job -t kw_test
