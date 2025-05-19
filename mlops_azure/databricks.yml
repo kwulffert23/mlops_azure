@@ -22,19 +22,19 @@ include:
 
 # Deployment Target specific values for workspace
 targets:
-  kw_dev:
+  dev:
     workspace:
       host: https://adb-984752964297111.11.azuredatabricks.net
 
-  kw_staging:
+  staging:
     workspace:
       host: https://adb-984752964297111.11.azuredatabricks.net
 
-  kw_prod:
+  prod:
     workspace:
       host: https://adb-984752964297111.11.azuredatabricks.net
 
-  kw_test:
-    workspace:
-      host: https://adb-984752964297111.11.azuredatabricks.net
+  # kw_test:
+  #   workspace:
+  #     host: https://adb-984752964297111.11.azuredatabricks.net
 
